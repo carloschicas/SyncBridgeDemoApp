@@ -1,0 +1,43 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: syncbridge_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: syncbridge_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      IDEMPOTENCY_TTL_DAYS: ${IDEMPOTENCY_TTL_DAYS:-30}
+      TTL_CLEANUP_INTERVAL_MS: ${TTL_CLEANUP_INTERVAL_MS:-3600000}
+    ports:
+      - "${PORT:-3000}:3000"
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
