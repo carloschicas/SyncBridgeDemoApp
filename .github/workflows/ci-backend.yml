@@ -1,0 +1,48 @@
+name: CI — syncbridge-demo-backend
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'syncbridge-demo-backend/**'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'syncbridge-demo-backend/**'
+      - '.github/workflows/ci.yml'
+
+defaults:
+  run:
+    working-directory: syncbridge-demo-backend
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: syncbridge-demo-backend/node_modules
+          key: ${{ runner.os }}-node22-${{ hashFiles('syncbridge-demo-backend/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node22-
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type-check & compile
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
