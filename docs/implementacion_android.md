@@ -1,0 +1,217 @@
+# Implementación Android — SyncBridge Demo ("Fuerza de Ventas Offline")
+
+Checklist maestro de tareas para el desarrollo de la app Android de demostración.
+Actualizar `[ ]` → `[x]` conforme se completen las tareas.
+
+---
+
+## 0. Configuración del Proyecto Base
+
+### Estructura y herramientas
+- [x] Crear proyecto Android nuevo en Android Studio con soporte Kotlin
+- [x] Configurar `minSdk 26`, `targetSdk 35`, `compileSdk 35`
+- [x] Activar Jetpack Compose en `build.gradle.kts` (BOM actualizado)
+- [ ] Configurar `composeOptions` y `kotlinOptions` (JVM target 17)
+- [x] Añadir `google()` y `mavenCentral()` en `settings.gradle.kts`
+- [ ] Crear estructura de paquetes: `ui/`, `viewmodel/`, `data/`, `di/`, `mock/`
+
+### Dependencias principales
+- [x] Agregar Jetpack Compose (BOM + material3, navigation, lifecycle)
+- [x] Agregar Room (`room-runtime`, `room-ktx`, kapt/ksp `room-compiler`)
+- [x] Agregar Hilt (`hilt-android`, `hilt-compiler`, `hilt-navigation-compose`)
+- [x] Agregar OkHttp + Logging Interceptor
+- [ ] Agregar `syncbridge-core` y `syncbridge-room` (Maven local o JAR)
+- [x] Agregar Coroutines + Flow (`kotlinx-coroutines-android`)
+- [ ] Verificar que el build base compila sin errores (`./gradlew assembleDebug`)
+
+### Configuración de código
+- [ ] Activar `strict` en `kotlinOptions` (`allWarningsAsErrors = false`, lint rules)
+- [ ] Configurar `proguard-rules.pro` con reglas para Room y Hilt
+- [ ] Crear `.editorconfig` con reglas de estilo Kotlin (ktlint)
+- [ ] Configurar ktlint o Detekt para análisis estático
+
+---
+
+## 1. Fase 1 — Estructura Base y UI (Semana 1)
+
+### 1.1 Capa de datos (Room)
+- [x] Definir entidad `OrderEntity` (id UUID, cliente, producto, cantidad, status, createdAt)
+- [ ] Definir `OrderStatus` enum: `PENDING`, `SYNCING`, `SYNCED`, `CONFLICT`
+- [x] Crear `OrderDao` con queries: insert, updateStatus, observeAll (Flow)
+- [x] Crear `AppDatabase` con `@Database` y migrations vacías iniciales
+- [ ] Verificar schema exportado (`room.schemaLocation` en build.gradle)
+
+### 1.2 Mock del servidor (OkHttp Interceptor)
+- [x] Crear `MockServerInterceptor` en paquete `mock/`
+- [ ] Implementar respuesta `201 Created` para `POST /api/orders` (happy path)
+- [ ] Implementar respuesta `409 Conflict` para `POST /api/orders/force-conflict`
+- [ ] Implementar latencia artificial configurable (100–800 ms)
+- [ ] Implementar toggle de "modo offline" que retorna `IOException` en lugar de respuesta
+- [x] Crear `OkHttpClient` con el interceptor inyectado via Hilt
+
+### 1.3 Pantalla Dashboard (`DashboardScreen`)
+- [ ] Crear Composable `DashboardScreen` con Scaffold base
+- [ ] Añadir badge de estado de red: indicador Verde ("Online") / Naranja ("Offline")
+- [ ] Añadir contador de "Transacciones Pendientes" (`pendingCount: Int`)
+- [ ] Añadir Switch/botón "Forzar Offline" visible en la UI
+- [ ] Añadir lista de pedidos recientes con estado visual por ítem
+- [ ] Añadir FAB o botón de navegación a `CreateOrderScreen`
+
+### 1.4 Pantalla Crear Pedido (`CreateOrderScreen`)
+- [ ] Crear Composable `CreateOrderScreen` con formulario
+- [ ] Campos: Cliente (texto), Producto (texto o dropdown), Cantidad (numérico)
+- [ ] Botón "Guardar" que llama al ViewModel (sin spinner bloqueante)
+- [ ] Feedback inmediato al usuario (Snackbar o Toast "Pedido guardado localmente")
+- [ ] Validación de campos no vacíos
+
+### 1.5 Navegación
+- [ ] Configurar `NavHost` con rutas `dashboard` y `create_order`
+- [ ] Pasar `NavController` a los Composables que lo necesiten
+
+---
+
+## 2. Fase 2 — Integración de SyncBridge (Semana 2)
+
+### 2.1 Inicialización de SyncBridge
+- [ ] Crear `DemoApplication : Application()` y registrarla en `AndroidManifest.xml`
+- [ ] Instanciar `SyncBridge` en `DemoApplication.onCreate()` con `RoomSyncAdapter`
+- [ ] Pasar `AppDatabase` al adaptador correctamente
+- [ ] Configurar `SyncBridge` con la URL base del servidor (o del interceptor mock)
+- [ ] Exponer instancia de `SyncBridge` via Hilt (`@Singleton`)
+
+### 2.2 ViewModel del Dashboard (`DashboardViewModel`)
+- [ ] Crear `DashboardViewModel` con inyección Hilt
+- [ ] Colectar `syncBridge.networkState` → exponer como `StateFlow<NetworkStatus>`
+- [ ] Colectar `syncBridge.observeQueueSize()` → exponer como `StateFlow<Int>`
+- [ ] Colectar `orderDao.observeAll()` → exponer como `StateFlow<List<OrderEntity>>`
+- [ ] Implementar `toggleOfflineMode()` que activa/desactiva el `MockServerInterceptor`
+
+### 2.3 ViewModel de Crear Pedido (`CreateOrderViewModel`)
+- [ ] Crear `CreateOrderViewModel` con inyección Hilt
+- [ ] Implementar `saveOrder(cliente, producto, cantidad)` que llama `syncBridge.enqueue()`
+- [ ] Generar UUID v4 para `X-Transaction-Id` por cada pedido nuevo
+- [ ] Exponer `UiState` (Idle, Saving, Saved) como `StateFlow`
+
+### 2.4 Conectar UI con ViewModels
+- [ ] Conectar `DashboardScreen` a `DashboardViewModel` (collectAsStateWithLifecycle)
+- [ ] Conectar `CreateOrderScreen` a `CreateOrderViewModel`
+- [ ] Verificar que el badge de red cambia al togglear modo offline
+- [ ] Verificar que el contador de pendientes se actualiza en tiempo real
+
+---
+
+## 3. Fase 3 — Casos de Uso Avanzados y Pulido (Semana 3)
+
+### 3.1 Simulador de caídas de red
+- [ ] El toggle "Forzar Offline" del Dashboard modifica el interceptor en runtime
+- [ ] Al reactivar online, verificar que `SyncBridge` drena la cola automáticamente
+- [ ] Verificar que los ítems de la lista pasan de `PENDING` → `SYNCING` → `SYNCED`
+
+### 3.2 Conflict Listener (Error 409)
+- [ ] Implementar `ConflictListener` en `DemoApplication` o via Hilt
+- [ ] Al recibir 409, mostrar `AlertDialog` en Compose con opciones: "Reintentar" / "Descartar"
+- [ ] Actualizar estado del pedido en Room a `CONFLICT` visualmente
+- [ ] Manejar la decisión del usuario y propagarla a SyncBridge
+
+### 3.3 Log visual en pantalla
+- [ ] Crear Composable `LiveLogPanel` (lista scrollable de eventos)
+- [ ] Capturar logs de SyncBridge (callbacks o interceptor de logs) y emitirlos a un `StateFlow<List<LogEntry>>`
+- [ ] Mostrar formato: `✅ SYNCED | txn=550e8400 | POST /api/orders | 201`
+- [ ] Mostrar formato: `♻️ CACHED  | txn=550e8400 | reintento | 200`
+- [ ] Mostrar formato: `⚠️ CONFLICT| txn=aaaa1111 | 409 stock agotado`
+- [ ] Añadir opción de colapsar/expandir el panel de logs
+
+### 3.4 Pulido de UI para la demo de ventas
+- [ ] Revisar colores y tipografía (Material3 theme personalizado)
+- [ ] Animación suave en el badge Online/Offline (color transition)
+- [ ] Animación en el contador de pendientes al incrementar/decrementar
+- [ ] Asegurar que ninguna acción del usuario bloquea el hilo principal
+- [ ] Probar el guion de demostración completo de principio a fin
+
+---
+
+## 4. CI/CD — GitHub Actions (Android)
+
+### 4.1 Workflow de Build y Lint
+- [ ] Crear `.github/workflows/android-ci.yml`
+- [ ] Trigger: `push` a `main` y `pull_request` a `main`
+- [ ] Job `build`: `actions/checkout` → `setup-java` (JDK 17) → `./gradlew assembleDebug`
+- [ ] Job `lint`: `./gradlew lint` con `--continue` y upload de reporte HTML como artefacto
+- [ ] Job `detekt` (o ktlint): `./gradlew detekt` para análisis estático
+- [ ] Cachear Gradle dependencies con `actions/cache` (`.gradle/`, `~/.gradle/`)
+
+### 4.2 Workflow de Tests
+- [ ] Añadir job `unit-test`: `./gradlew testDebugUnitTest`
+- [ ] Upload de reporte JUnit como artefacto
+- [ ] Considerar matriz de JDK si se requiere compatibilidad amplia
+
+### 4.3 Workflow de Release (APK de Demo)
+- [ ] Crear `.github/workflows/android-release.yml`
+- [ ] Trigger: tag `v*.*.*` (ej. `v1.0.0`)
+- [ ] Build APK release: `./gradlew assembleRelease`
+- [ ] Firmar APK con keystore almacenado en GitHub Secrets (`KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `STORE_PASSWORD`)
+- [ ] Subir APK firmado como Release Asset via `softprops/action-gh-release`
+- [ ] Generar `CHANGELOG.md` automáticamente desde commits (ver sección 6)
+
+---
+
+## 5. Configuración de Tests
+
+### 5.1 Tests unitarios (JVM)
+- [ ] Configurar dependencias de test: JUnit 5, MockK, Coroutines Test
+- [ ] Test unitario: `CreateOrderViewModelTest` — verifica que `saveOrder()` llama a `syncBridge.enqueue()`
+- [ ] Test unitario: `DashboardViewModelTest` — verifica que el StateFlow de pendientes se actualiza
+- [ ] Test unitario: `MockServerInterceptorTest` — verifica respuestas 201, 409 y IOException en offline
+- [ ] Test unitario: generación correcta de UUID v4 por pedido
+
+### 5.2 Tests de Room (JVM con in-memory DB)
+- [ ] Configurar `TestCoroutineDispatcher` y `InstantTaskExecutorRule`
+- [ ] Test de `OrderDao`: insert → query → verificar campos
+- [ ] Test de `OrderDao`: actualización de status `PENDING` → `SYNCED`
+- [ ] Test de `OrderDao`: `observeAll()` emite actualizaciones en tiempo real
+
+### 5.3 Tests de integración / instrumentados (opcional para PoC)
+- [ ] Configurar `hiltRule` en tests instrumentados si se usa Hilt
+- [ ] Test end-to-end: crear pedido en offline → activar online → verificar status SYNCED en Room
+
+### 5.4 Configuración de cobertura
+- [ ] Activar JaCoCo en `build.gradle.kts` para métricas de cobertura
+- [ ] Generar reporte HTML: `./gradlew jacocoTestReport`
+- [ ] Umbral mínimo de cobertura: 60% (ajustable, es una PoC)
+
+---
+
+## 6. Manejo de Versiones y Changelog
+
+### 6.1 Versionado semántico
+- [x] Definir `versionName` y `versionCode` en `build.gradle.kts` del módulo `app`
+- [ ] Convención: `versionName = "MAJOR.MINOR.PATCH"` (ej. `1.0.0`)
+- [ ] Convención: `versionCode` = entero autoincremental (puede ser el número de build de CI)
+- [ ] Documentar en `README.md` del módulo cómo incrementar versiones
+
+### 6.2 Conventional Commits
+- [ ] Adoptar formato `type(scope): descripción` para todos los commits del módulo Android
+  - Tipos válidos: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `ci`
+  - Scopes sugeridos: `ui`, `viewmodel`, `data`, `mock`, `ci`, `deps`
+- [ ] Configurar commitlint (opcional) o documentar la convención en `CONTRIBUTING.md`
+
+### 6.3 CHANGELOG.md
+- [x] Crear `syncbridge-demo-android/CHANGELOG.md` con estructura Keep a Changelog
+- [ ] Secciones por versión: `[Unreleased]`, `[1.0.0]`, etc.
+- [ ] Subsecciones: `Added`, `Changed`, `Fixed`, `Removed`
+- [ ] Actualizar `[Unreleased]` antes de cada Release y renombrar a la versión al tagear
+- [ ] Automatizar generación en el workflow de release (ej. `git-cliff` o `conventional-changelog`)
+
+---
+
+## Estado General
+
+| Fase | Descripción | Estado |
+|------|-------------|--------|
+| 0 | Configuración del proyecto base | ⬜ Pendiente |
+| 1 | Estructura Base y UI | ⬜ Pendiente |
+| 2 | Integración de SyncBridge | ⬜ Pendiente |
+| 3 | Casos de Uso Avanzados y Pulido | ⬜ Pendiente |
+| 4 | CI/CD GitHub Actions | ⬜ Pendiente |
+| 5 | Configuración de Tests | ⬜ Pendiente |
+| 6 | Versiones y Changelog | ⬜ Pendiente |
