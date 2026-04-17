@@ -36,37 +36,37 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 
 ### 1.1 Capa de datos (Room)
 - [x] Definir entidad `OrderEntity` (id UUID, cliente, producto, cantidad, status, createdAt)
-- [ ] Definir `OrderStatus` enum: `PENDING`, `SYNCING`, `SYNCED`, `CONFLICT`
+- [x] Definir `OrderStatus` enum: `PENDING`, `SYNCING`, `SYNCED`, `CONFLICT`
 - [x] Crear `OrderDao` con queries: insert, updateStatus, observeAll (Flow)
 - [x] Crear `AppDatabase` con `@Database` y migrations vacías iniciales
-- [ ] Verificar schema exportado (`room.schemaLocation` en build.gradle)
+- [x] Verificar schema exportado (`room.schemaLocation` en build.gradle)
 
 ### 1.2 Mock del servidor (OkHttp Interceptor)
 - [x] Crear `MockServerInterceptor` en paquete `mock/`
-- [ ] Implementar respuesta `201 Created` para `POST /api/orders` (happy path)
-- [ ] Implementar respuesta `409 Conflict` para `POST /api/orders/force-conflict`
-- [ ] Implementar latencia artificial configurable (100–800 ms)
-- [ ] Implementar toggle de "modo offline" que retorna `IOException` en lugar de respuesta
+- [x] Implementar respuesta `201 Created` para `POST /api/orders` (happy path)
+- [x] Implementar respuesta `409 Conflict` para `POST /api/orders/force-conflict`
+- [x] Implementar latencia artificial configurable (100–800 ms)
+- [x] Implementar toggle de "modo offline" que retorna `IOException` en lugar de respuesta
 - [x] Crear `OkHttpClient` con el interceptor inyectado via Hilt
 
 ### 1.3 Pantalla Dashboard (`DashboardScreen`)
-- [ ] Crear Composable `DashboardScreen` con Scaffold base
-- [ ] Añadir badge de estado de red: indicador Verde ("Online") / Naranja ("Offline")
-- [ ] Añadir contador de "Transacciones Pendientes" (`pendingCount: Int`)
-- [ ] Añadir Switch/botón "Forzar Offline" visible en la UI
-- [ ] Añadir lista de pedidos recientes con estado visual por ítem
-- [ ] Añadir FAB o botón de navegación a `CreateOrderScreen`
+- [x] Crear Composable `DashboardScreen` con Scaffold base
+- [x] Añadir badge de estado de red: indicador Verde ("Online") / Naranja ("Offline")
+- [x] Añadir contador de "Transacciones Pendientes" (`pendingCount: Int`)
+- [x] Añadir Switch/botón "Forzar Offline" visible en la UI
+- [x] Añadir lista de pedidos recientes con estado visual por ítem
+- [x] Añadir FAB o botón de navegación a `CreateOrderScreen`
 
 ### 1.4 Pantalla Crear Pedido (`CreateOrderScreen`)
-- [ ] Crear Composable `CreateOrderScreen` con formulario
-- [ ] Campos: Cliente (texto), Producto (texto o dropdown), Cantidad (numérico)
-- [ ] Botón "Guardar" que llama al ViewModel (sin spinner bloqueante)
-- [ ] Feedback inmediato al usuario (Snackbar o Toast "Pedido guardado localmente")
-- [ ] Validación de campos no vacíos
+- [x] Crear Composable `CreateOrderScreen` con formulario
+- [x] Campos: Cliente (texto), Producto (texto o dropdown), Cantidad (numérico)
+- [x] Botón "Guardar" que llama al ViewModel (sin spinner bloqueante)
+- [x] Feedback inmediato al usuario (Snackbar o Toast "Pedido guardado localmente")
+- [x] Validación de campos no vacíos
 
 ### 1.5 Navegación
-- [ ] Configurar `NavHost` con rutas `dashboard` y `create_order`
-- [ ] Pasar `NavController` a los Composables que lo necesiten
+- [x] Configurar `NavHost` con rutas `dashboard` y `create_order`
+- [x] Pasar `NavController` a los Composables que lo necesiten
 
 ---
 
@@ -209,7 +209,7 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 | Fase | Descripción | Estado |
 |------|-------------|--------|
 | 0 | Configuración del proyecto base | ⬜ Pendiente |
-| 1 | Estructura Base y UI | ⬜ Pendiente |
+| 1 | Estructura Base y UI | ✅ Completada |
 | 2 | Integración de SyncBridge | ⬜ Pendiente |
 | 3 | Casos de Uso Avanzados y Pulido | ⬜ Pendiente |
 | 4 | CI/CD GitHub Actions | ⬜ Pendiente |
