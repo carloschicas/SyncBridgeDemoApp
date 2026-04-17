@@ -1,0 +1,16 @@
+{
+  "baseUrl": "http://mock.syncbridge.local/",
+  "environment": "demo",
+  "maxRetries": 3,
+  "backoffStrategy": "exponential",
+  "initialDelayMs": 1000,
+  "maxDelayMs": 30000,
+  "timeoutMs": 30000,
+  "requiresUnmetered": false,
+  "maxPayloadSizeKb": 256,
+  "batchSize": 10,
+  "defaultTtlSeconds": 86400,
+  "defaultPriority": "NORMAL",
+  "compressPayloads": false,
+  "logLevel": "DEBUG"
+}

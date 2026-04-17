@@ -48,6 +48,8 @@ android {
 }
 
 dependencies {
+    implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -74,6 +76,9 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
+    // WorkManager (requerido por SyncBridge SDK)
+    implementation(libs.androidx.work.runtime.ktx)
 
     // OkHttp + Retrofit + Gson
     implementation(libs.okhttp)

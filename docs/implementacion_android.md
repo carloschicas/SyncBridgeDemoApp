@@ -20,7 +20,7 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 - [x] Agregar Room (`room-runtime`, `room-ktx`, kapt/ksp `room-compiler`)
 - [x] Agregar Hilt (`hilt-android`, `hilt-compiler`, `hilt-navigation-compose`)
 - [x] Agregar OkHttp + Logging Interceptor
-- [ ] Agregar `syncbridge-core` y `syncbridge-room` (Maven local o JAR)
+- [x] Agregar `syncbridge-core` y `syncbridge-room` (Maven local o JAR)
 - [x] Agregar Coroutines + Flow (`kotlinx-coroutines-android`)
 - [ ] Verificar que el build base compila sin errores (`./gradlew assembleDebug`)
 
@@ -73,23 +73,23 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 ## 2. Fase 2 — Integración de SyncBridge (Semana 2)
 
 ### 2.1 Inicialización de SyncBridge
-- [ ] Crear `DemoApplication : Application()` y registrarla en `AndroidManifest.xml`
-- [ ] Instanciar `SyncBridge` en `DemoApplication.onCreate()` con `RoomSyncAdapter`
-- [ ] Pasar `AppDatabase` al adaptador correctamente
-- [ ] Configurar `SyncBridge` con la URL base del servidor (o del interceptor mock)
-- [ ] Exponer instancia de `SyncBridge` via Hilt (`@Singleton`)
+- [x] Crear `DemoApplication : Application()` y registrarla en `AndroidManifest.xml`
+- [x] Instanciar `SyncBridge` en `DemoApplication.onCreate()` con `RoomSyncAdapter`
+- [x] Pasar `AppDatabase` al adaptador correctamente
+- [x] Configurar `SyncBridge` con la URL base del servidor (o del interceptor mock)
+- [x] Exponer instancia de `SyncBridge` via Hilt (`@Singleton`)
 
 ### 2.2 ViewModel del Dashboard (`DashboardViewModel`)
 - [ ] Crear `DashboardViewModel` con inyección Hilt
 - [ ] Colectar `syncBridge.networkState` → exponer como `StateFlow<NetworkStatus>`
-- [ ] Colectar `syncBridge.observeQueueSize()` → exponer como `StateFlow<Int>`
+- [x] Colectar `syncBridge.observeQueueSize()` → exponer como `StateFlow<Int>` (via conteo PENDING en OrderDao)
 - [ ] Colectar `orderDao.observeAll()` → exponer como `StateFlow<List<OrderEntity>>`
 - [ ] Implementar `toggleOfflineMode()` que activa/desactiva el `MockServerInterceptor`
 
 ### 2.3 ViewModel de Crear Pedido (`CreateOrderViewModel`)
-- [ ] Crear `CreateOrderViewModel` con inyección Hilt
-- [ ] Implementar `saveOrder(cliente, producto, cantidad)` que llama `syncBridge.enqueue()`
-- [ ] Generar UUID v4 para `X-Transaction-Id` por cada pedido nuevo
+- [x] Crear `CreateOrderViewModel` con inyección Hilt
+- [x] Implementar `saveOrder(cliente, producto, cantidad)` que llama `syncBridge.enqueue()`
+- [x] Generar UUID v4 para `X-Transaction-Id` por cada pedido nuevo
 - [ ] Exponer `UiState` (Idle, Saving, Saved) como `StateFlow`
 
 ### 2.4 Conectar UI con ViewModels

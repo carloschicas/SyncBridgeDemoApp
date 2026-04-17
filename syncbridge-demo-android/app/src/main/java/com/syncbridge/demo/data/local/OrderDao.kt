@@ -14,4 +14,7 @@ interface OrderDao {
 
     @Query("SELECT * FROM orders ORDER BY rowid DESC")
     fun observeAll(): Flow<List<OrderEntity>>
+
+    @Query("UPDATE orders SET syncStatus = :status WHERE id = :id")
+    suspend fun updateStatus(id: String, status: String)
 }
