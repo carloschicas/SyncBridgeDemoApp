@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.syncbridge.demo.presentation.OrderViewModel
 import com.syncbridge.demo.presentation.create_order.CreateOrderScreen
 import com.syncbridge.demo.presentation.dashboard.DashboardScreen
+import com.syncbridge.demo.presentation.dashboard.DashboardViewModel
 import com.syncbridge.demo.ui.theme.SyncbridgedemoTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,12 +23,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             SyncbridgedemoTheme {
                 val navController = rememberNavController()
+                val dashboardViewModel: DashboardViewModel = hiltViewModel()
                 val orderViewModel: OrderViewModel = hiltViewModel()
 
                 NavHost(navController = navController, startDestination = "dashboard") {
                     composable("dashboard") {
                         DashboardScreen(
-                            viewModel = orderViewModel,
+                            viewModel = dashboardViewModel,
                             onNavigateToCreateOrder = { navController.navigate("create_order") }
                         )
                     }

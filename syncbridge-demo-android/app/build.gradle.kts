@@ -80,12 +80,6 @@ dependencies {
     // WorkManager (requerido por SyncBridge SDK)
     implementation(libs.androidx.work.runtime.ktx)
 
-    // OkHttp + Retrofit + Gson
-    implementation(libs.okhttp)
-    implementation(libs.okhttp.logging.interceptor)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

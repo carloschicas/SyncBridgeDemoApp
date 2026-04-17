@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -45,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.syncbridge.demo.data.local.OrderEntity
-import com.syncbridge.demo.presentation.OrderViewModel
 
 private val ColorPrimary = Color(0xFF000666)
 private val ColorOnSurface = Color(0xFF1A1B23)
@@ -61,10 +61,19 @@ private val ColorTertiaryFixed = Color(0xFFFFDBCA)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    viewModel: OrderViewModel,
+    viewModel: DashboardViewModel,
     onNavigateToCreateOrder: () -> Unit
 ) {
     val orders by viewModel.orders.collectAsStateWithLifecycle()
+    val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
+    val conflictEvent by viewModel.conflictEvent.collectAsStateWithLifecycle()
+
+    conflictEvent?.let { event ->
+        ConflictDialog(
+            transactionId = event.transaction.id,
+            onDismiss = viewModel::dismissConflict
+        )
+    }
 
     Scaffold(
         containerColor = ColorSurface,
@@ -112,7 +121,7 @@ fun DashboardScreen(
                 .background(ColorSurface),
             contentPadding = PaddingValues(bottom = 96.dp)
         ) {
-            item { HeroSection() }
+            item { HeroSection(isOnline = isOnline) }
             item { StatsSection(orderCount = orders.size) }
             item { QuinceSection() }
             item { OrdersHeader() }
@@ -128,7 +137,10 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun HeroSection() {
+private fun HeroSection(isOnline: Boolean) {
+    val pillColor = if (isOnline) ColorSecondaryContainer else Color(0xFFFF9800)
+    val pillLabel = if (isOnline) "CONECTADO" else "DESCONECTADO"
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -174,12 +186,12 @@ private fun HeroSection() {
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(ColorSecondaryContainer)
+                            .background(pillColor)
                     )
                     Text(
-                        text = "CONECTADO",
+                        text = pillLabel,
                         style = MaterialTheme.typography.labelSmall.copy(
-                            color = ColorSecondaryContainer,
+                            color = pillColor,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 1.sp
                         )
@@ -432,4 +444,42 @@ private fun EmptyState() {
             textAlign = TextAlign.Center
         )
     }
+}
+
+@Composable
+private fun ConflictDialog(transactionId: String, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Conflicto detectado",
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF8B0000)
+                )
+            )
+        },
+        text = {
+            Text(
+                text = "Conflicto en transacción: $transactionId",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = ColorOnSurface.copy(alpha = 0.75f)
+                )
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "ENTENDIDO",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = ColorPrimary,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 1.sp
+                    )
+                )
+            }
+        },
+        containerColor = ColorSurfaceContainerLowest,
+        shape = RoundedCornerShape(12.dp)
+    )
 }

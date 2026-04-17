@@ -1,5 +1,5 @@
 {
-  "baseUrl": "http://mock.syncbridge.local/",
+  "baseUrl": "http://10.0.2.2:3000",
   "environment": "demo",
   "maxRetries": 3,
   "backoffStrategy": "exponential",

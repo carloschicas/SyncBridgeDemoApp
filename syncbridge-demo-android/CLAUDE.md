@@ -15,20 +15,19 @@ Este documento define el sistema de diseño completo de la app ("The Authoritati
 - **UI:** Jetpack Compose
 - **Persistencia local:** Room Database
 - **Inyección de dependencias:** Hilt
-- **Red:** OkHttp con `MockServerInterceptor` (simula respuestas del servidor)
+- **Red:** SyncBridge SDK (gestiona cola, reintentos e inyección de cabeceras — no hay OkHttp/Retrofit en la app)
 
 ## Estructura del proyecto
 
 ```
 app/src/main/java/com/syncbridge/demo/
 ├── data/
-│   ├── local/          # Room: OrderEntity, OrderDao, AppDatabase
-│   └── network/        # OkHttp: ApiService, MockServerInterceptor
-├── di/                 # Módulos Hilt: DatabaseModule, NetworkModule
+│   └── local/          # Room: OrderEntity, OrderDao, AppDatabase
+├── di/                 # Módulos Hilt: DatabaseModule, SyncBridgeModule, ConflictManager
 ├── presentation/
-│   ├── dashboard/      # DashboardScreen.kt
-│   └── create_order/   # CreateOrderScreen.kt
-├── App.kt              # Application class
+│   ├── dashboard/      # DashboardScreen.kt, DashboardViewModel.kt
+│   └── create_order/   # CreateOrderScreen.kt (usa OrderViewModel)
+├── App.kt              # Application class — inicializa SyncBridge con conflictListener
 └── MainActivity.kt
 ```
 
@@ -43,8 +42,9 @@ app/src/main/java/com/syncbridge/demo/
 
 - No usar `any` ni tipos sin tipado explícito en Kotlin.
 - Los ViewModels exponen estado via `StateFlow`, nunca `LiveData`.
-- Los Composables no acceden directamente a Room ni a OkHttp — solo consumen estado del ViewModel.
-- El `MockServerInterceptor` simula latencia y respuestas del servidor (200, 409, 500). No conectar a un servidor real durante el desarrollo de la demo.
+- Los Composables no acceden directamente a Room ni al SDK — solo consumen estado del ViewModel.
+- El SDK SyncBridge maneja la red; la app no instancia OkHttpClient ni Retrofit.
+- Los conflictos (409) se propagan via `ConflictManager` → `DashboardViewModel` → `DashboardScreen`.
 
 ## Casos de uso a demostrar
 
