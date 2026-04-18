@@ -161,8 +161,8 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 ## 5. Configuración de Tests
 
 ### 5.1 Tests unitarios (JVM)
-- [ ] Configurar dependencias de test: JUnit 5, MockK, Coroutines Test
-- [ ] Test unitario: `CreateOrderViewModelTest` — verifica que `saveOrder()` llama a `syncBridge.enqueue()`
+- [x] Configurar dependencias de test: JUnit 4, MockK, Coroutines Test
+- [x] Test unitario: `OrderViewModelTest` — verifica que `insertOrder()` llama a `syncBridge.enqueue()` con `/api/orders`
 - [ ] Test unitario: `DashboardViewModelTest` — verifica que el StateFlow de pendientes se actualiza
 - [ ] Test unitario: `MockServerInterceptorTest` — verifica respuestas 201, 409 y IOException en offline
 - [ ] Test unitario: generación correcta de UUID v4 por pedido
