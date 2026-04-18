@@ -19,7 +19,7 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 - [x] Agregar Jetpack Compose (BOM + material3, navigation, lifecycle)
 - [x] Agregar Room (`room-runtime`, `room-ktx`, kapt/ksp `room-compiler`)
 - [x] Agregar Hilt (`hilt-android`, `hilt-compiler`, `hilt-navigation-compose`)
-- [x] Agregar OkHttp + Logging Interceptor
+- [x] ~~Agregar OkHttp + Logging Interceptor~~ *(eliminado — SDK gestiona la red)*
 - [x] Agregar `syncbridge-core` y `syncbridge-room` (Maven local o JAR)
 - [x] Agregar Coroutines + Flow (`kotlinx-coroutines-android`)
 - [ ] Verificar que el build base compila sin errores (`./gradlew assembleDebug`)
@@ -41,13 +41,16 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 - [x] Crear `AppDatabase` con `@Database` y migrations vacías iniciales
 - [x] Verificar schema exportado (`room.schemaLocation` en build.gradle)
 
-### 1.2 Mock del servidor (OkHttp Interceptor)
-- [x] Crear `MockServerInterceptor` en paquete `mock/`
-- [x] Implementar respuesta `201 Created` para `POST /api/orders` (happy path)
-- [x] Implementar respuesta `409 Conflict` para `POST /api/orders/force-conflict`
-- [x] Implementar latencia artificial configurable (100–800 ms)
-- [x] Implementar toggle de "modo offline" que retorna `IOException` en lugar de respuesta
-- [x] Crear `OkHttpClient` con el interceptor inyectado via Hilt
+### 1.2 Capa de red — gestionada por SyncBridge SDK
+> **Nota (2026-04-17):** El paquete `data/network` (ApiService, MockServerInterceptor, NetworkModule) fue
+> eliminado por completo. El SDK de SyncBridge gestiona su propia capa de red, cola e inyección de cabeceras.
+> `syncbridge.json` apunta a `http://10.0.2.2:8080`. El estado de conectividad real se expone via
+> `SyncBridge.getInstance().networkState: StateFlow<Boolean>`, observado en `DashboardViewModel`.
+
+- [x] ~~Crear `ApiService`~~ *(eliminado — SDK gestiona la red)*
+- [x] ~~Crear `OkHttpClient`~~ *(eliminado — SDK gestiona la red)*
+- [x] ~~Configurar Retrofit~~ *(eliminado — SDK gestiona la red)*
+- [x] Configurar `syncbridge.json` con `baseUrl = http://10.0.2.2:8080`
 
 ### 1.3 Pantalla Dashboard (`DashboardScreen`)
 - [x] Crear Composable `DashboardScreen` con Scaffold base
@@ -80,46 +83,46 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 - [x] Exponer instancia de `SyncBridge` via Hilt (`@Singleton`)
 
 ### 2.2 ViewModel del Dashboard (`DashboardViewModel`)
-- [ ] Crear `DashboardViewModel` con inyección Hilt
-- [ ] Colectar `syncBridge.networkState` → exponer como `StateFlow<NetworkStatus>`
-- [x] Colectar `syncBridge.observeQueueSize()` → exponer como `StateFlow<Int>` (via conteo PENDING en OrderDao)
-- [ ] Colectar `orderDao.observeAll()` → exponer como `StateFlow<List<OrderEntity>>`
-- [ ] Implementar `toggleOfflineMode()` que activa/desactiva el `MockServerInterceptor`
+- [x] Crear `DashboardViewModel` con inyección Hilt
+- [x] Colectar `syncBridge.networkState` → exponer como `StateFlow<Boolean>` (`isOnline`)
+- [x] Colectar `orderDao.observeAll()` → exponer como `StateFlow<List<OrderEntity>>`
+- [x] Exponer `queueSize` (conteo PENDING en OrderDao) como `StateFlow<Int>`
+- [x] Inyectar `ConflictManager` → exponer `conflictEvent: StateFlow<ConflictEvent?>` para UI
 
-### 2.3 ViewModel de Crear Pedido (`CreateOrderViewModel`)
-- [x] Crear `CreateOrderViewModel` con inyección Hilt
-- [x] Implementar `saveOrder(cliente, producto, cantidad)` que llama `syncBridge.enqueue()`
+### 2.3 ViewModel de Crear Pedido (`OrderViewModel`)
+- [x] Inyección Hilt con `OrderDao` y `SyncBridge`
+- [x] Implementar `insertOrder(cliente, producto, cantidad)` que llama `syncBridge.enqueue(endpoint="/api/orders", payload=json)`
 - [x] Generar UUID v4 para `X-Transaction-Id` por cada pedido nuevo
-- [ ] Exponer `UiState` (Idle, Saving, Saved) como `StateFlow`
+- [x] Observar `syncBridge.observeTransaction(txnId)` para actualizar Room (SYNCED / CONFLICT / FAILED)
 
 ### 2.4 Conectar UI con ViewModels
-- [ ] Conectar `DashboardScreen` a `DashboardViewModel` (collectAsStateWithLifecycle)
-- [ ] Conectar `CreateOrderScreen` a `CreateOrderViewModel`
-- [ ] Verificar que el badge de red cambia al togglear modo offline
-- [ ] Verificar que el contador de pendientes se actualiza en tiempo real
+- [x] Conectar `DashboardScreen` a `DashboardViewModel` (collectAsStateWithLifecycle)
+- [x] Conectar `CreateOrderScreen` a `OrderViewModel`
+- [x] Badge de red refleja `SyncBridge.networkState` real (CONECTADO / DESCONECTADO)
+- [x] Contador de pedidos se actualiza en tiempo real desde Room
 
 ---
 
 ## 3. Fase 3 — Casos de Uso Avanzados y Pulido (Semana 3)
 
 ### 3.1 Simulador de caídas de red
-- [ ] El toggle "Forzar Offline" del Dashboard modifica el interceptor en runtime
+- [x] El toggle "Forzar Offline" del Dashboard actualiza `isOffline: StateFlow<Boolean>` en el ViewModel
 - [ ] Al reactivar online, verificar que `SyncBridge` drena la cola automáticamente
 - [ ] Verificar que los ítems de la lista pasan de `PENDING` → `SYNCING` → `SYNCED`
 
 ### 3.2 Conflict Listener (Error 409)
-- [ ] Implementar `ConflictListener` en `DemoApplication` o via Hilt
-- [ ] Al recibir 409, mostrar `AlertDialog` en Compose con opciones: "Reintentar" / "Descartar"
-- [ ] Actualizar estado del pedido en Room a `CONFLICT` visualmente
-- [ ] Manejar la decisión del usuario y propagarla a SyncBridge
+- [x] Implementar `ConflictListener` en `App.onCreate()` — emite al `ConflictManager` Singleton (Hilt)
+- [x] `ConflictManager` expone `SharedFlow<ConflictEvent>` consumido por `DashboardViewModel`
+- [x] Al recibir 409, mostrar `AlertDialog` en `DashboardScreen` con "Conflicto en transacción: [ID]"
+- [x] Actualizar estado del pedido en Room a `CONFLICT` (via `observeTransaction()` en `OrderViewModel`)
 
 ### 3.3 Log visual en pantalla
-- [ ] Crear Composable `LiveLogPanel` (lista scrollable de eventos)
+- [x] Crear Composable `LiveLogPanel` (lista scrollable de eventos)
 - [ ] Capturar logs de SyncBridge (callbacks o interceptor de logs) y emitirlos a un `StateFlow<List<LogEntry>>`
 - [ ] Mostrar formato: `✅ SYNCED | txn=550e8400 | POST /api/orders | 201`
 - [ ] Mostrar formato: `♻️ CACHED  | txn=550e8400 | reintento | 200`
 - [ ] Mostrar formato: `⚠️ CONFLICT| txn=aaaa1111 | 409 stock agotado`
-- [ ] Añadir opción de colapsar/expandir el panel de logs
+- [x] Añadir opción de colapsar/expandir el panel de logs
 
 ### 3.4 Pulido de UI para la demo de ventas
 - [ ] Revisar colores y tipografía (Material3 theme personalizado)
@@ -210,8 +213,8 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 |------|-------------|--------|
 | 0 | Configuración del proyecto base | ⬜ Pendiente |
 | 1 | Estructura Base y UI | ✅ Completada |
-| 2 | Integración de SyncBridge | ⬜ Pendiente |
-| 3 | Casos de Uso Avanzados y Pulido | ⬜ Pendiente |
+| 2 | Integración de SyncBridge SDK completa (red custom eliminada) | ✅ Completada |
+| 3 | Casos de Uso Avanzados y Pulido | 🔄 En progreso |
 | 4 | CI/CD GitHub Actions | ⬜ Pendiente |
 | 5 | Configuración de Tests | ⬜ Pendiente |
 | 6 | Versiones y Changelog | ⬜ Pendiente |

@@ -43,7 +43,6 @@ class DashboardViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             syncBridge.networkState
-                .distinctUntilChanged()
                 .collect { online ->
                     if (online) Log.i(TAG, "NETWORK | ONLINE — SDK will drain queue")
                     else Log.w(TAG, "NETWORK | OFFLINE — SDK will queue requests locally")

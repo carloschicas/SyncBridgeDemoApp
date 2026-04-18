@@ -80,8 +80,16 @@ dependencies {
     // WorkManager (requerido por SyncBridge SDK)
     implementation(libs.androidx.work.runtime.ktx)
 
+    // OkHttp (dependencia transitiva del SyncBridge SDK)
+    implementation(libs.okhttp)
+
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.mockk.android)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
