@@ -7,6 +7,8 @@ import com.syncbridge.demo.data.local.OrderDao
 import com.syncbridge.demo.data.local.OrderEntity
 import com.syncbridge.demo.di.ApplicationScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.syncbridge.model.HttpMethod
+import io.syncbridge.model.Priority
 import io.syncbridge.SyncBridge
 import io.syncbridge.conflict.TxnState
 import kotlinx.coroutines.CoroutineScope
@@ -48,6 +50,11 @@ class OrderViewModel @Inject constructor(
                 syncBridge.enqueue(
                     endpoint = "/api/orders",
                     payload = payload,
+                    metadata = null,
+                    httpMethod = HttpMethod.POST,
+                    priority = Priority.NORMAL,
+                    groupId = null,
+                    ttlSeconds = null,
                     headers = mapOf("X-Transaction-Id" to transactionId)
                 )
             } catch (e: Exception) {
