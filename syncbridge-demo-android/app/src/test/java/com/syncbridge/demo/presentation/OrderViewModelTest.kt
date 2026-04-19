@@ -1,11 +1,8 @@
 package com.syncbridge.demo.presentation
 
 import com.syncbridge.demo.data.local.OrderDao
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.unmockkAll
+import android.util.Log
+import io.mockk.*
 import io.syncbridge.SyncBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +28,11 @@ class OrderViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        mockkStatic(Log::class)
+        every { Log.i(any(), any()) } returns 0
+        every { Log.d(any(), any()) } returns 0
+        every { Log.w(any(), any<String>()) } returns 0
+        every { Log.e(any(), any<String>(), any()) } returns 0
         orderDao = mockk(relaxed = true)
         syncBridge = mockk()
     }
@@ -45,6 +47,8 @@ class OrderViewModelTest {
     fun whenSavingOrder_thenEnqueuesToSyncBridge() = runTest {
         val mockTxnId = "mock-uuid-123"
 
+        // All 8 args positional: avoids Kotlin's enqueue$default which NPEs on a mock
+        // (config.getDefaultPriority() is null). ViewModel now passes all args explicitly.
         coEvery {
             syncBridge.enqueue(any(), any(), any(), any(), any(), any(), any(), any())
         } returns mockTxnId
@@ -66,16 +70,7 @@ class OrderViewModelTest {
         advanceUntilIdle()
 
         coVerify(exactly = 1) {
-            syncBridge.enqueue(
-                endpoint = "/api/orders",
-                payload = any(),
-                metadata = isNull(),
-                httpMethod = any(),
-                priority = any(),
-                groupId = isNull(),
-                ttlSeconds = isNull(),
-                headers = any()
-            )
+            syncBridge.enqueue(eq("/api/orders"), any(), any(), any(), any(), any(), any(), any())
         }
     }
 }

@@ -33,6 +33,43 @@ class OrderDaoTest {
     }
 
     @Test
+    fun updateStatus_updatesCorrectly() = runTest {
+        val order = OrderEntity(
+            id = "order-status-001",
+            clientName = "Pedro Martínez",
+            productName = "Laptop",
+            quantity = 1,
+            syncStatus = "PENDING"
+        )
+        orderDao.insert(order)
+
+        orderDao.updateStatus("order-status-001", "SYNCED")
+
+        val orders = orderDao.observeAll().first()
+        assertEquals(1, orders.size)
+        assertEquals("SYNCED", orders[0].syncStatus)
+    }
+
+    @Test
+    fun observeAll_emitsUpdates() = runTest {
+        val initialOrders = orderDao.observeAll().first()
+        assertTrue(initialOrders.isEmpty())
+
+        val order = OrderEntity(
+            id = "order-emit-001",
+            clientName = "Ana López",
+            productName = "Auriculares",
+            quantity = 1,
+            syncStatus = "PENDING"
+        )
+        orderDao.insert(order)
+
+        val updatedOrders = orderDao.observeAll().first()
+        assertEquals(1, updatedOrders.size)
+        assertEquals(order.id, updatedOrders[0].id)
+    }
+
+    @Test
     fun insertOrder_and_readInFlow() = runTest {
         val testOrder = OrderEntity(
             id = "order-test-001",
