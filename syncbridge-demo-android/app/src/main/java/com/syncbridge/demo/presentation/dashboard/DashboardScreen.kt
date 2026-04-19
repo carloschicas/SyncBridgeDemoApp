@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.syncbridge.demo.BuildConfig
 import com.syncbridge.demo.data.local.OrderEntity
 
 private val ColorPrimary = Color(0xFF000666)
@@ -132,6 +133,7 @@ fun DashboardScreen(
                     OrderCard(order = order)
                 }
             }
+            item { VersionFooter() }
         }
     }
 }
@@ -442,6 +444,25 @@ private fun EmptyState() {
                 lineHeight = 24.sp
             ),
             textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun VersionFooter() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(ColorSurface)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Versión ${BuildConfig.VERSION_NAME}",
+            style = MaterialTheme.typography.labelSmall.copy(
+                color = ColorOnSurface.copy(alpha = 0.30f),
+                letterSpacing = 0.5.sp
+            )
         )
     }
 }

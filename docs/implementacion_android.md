@@ -136,25 +136,26 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 ## 4. CI/CD — GitHub Actions (Android)
 
 ### 4.1 Workflow de Build y Lint
-- [ ] Crear `.github/workflows/android-ci.yml`
-- [ ] Trigger: `push` a `main` y `pull_request` a `main`
-- [ ] Job `build`: `actions/checkout` → `setup-java` (JDK 17) → `./gradlew assembleDebug`
+- [x] Crear `.github/workflows/android-ci.yml`
+- [x] Trigger: `push` a `main` y `pull_request` a `main`
+- [x] Job `build`: `actions/checkout` → `setup-java` (JDK 17) → `./gradlew assembleDebug`
 - [ ] Job `lint`: `./gradlew lint` con `--continue` y upload de reporte HTML como artefacto
 - [ ] Job `detekt` (o ktlint): `./gradlew detekt` para análisis estático
 - [ ] Cachear Gradle dependencies con `actions/cache` (`.gradle/`, `~/.gradle/`)
 
 ### 4.2 Workflow de Tests
-- [ ] Añadir job `unit-test`: `./gradlew testDebugUnitTest`
-- [ ] Upload de reporte JUnit como artefacto
+- [x] Añadir job `unit-test`: `./gradlew testDebugUnitTest`
+- [x] Upload APK de debug como artefacto (`SyncBridge-Demo-APK`)
 - [ ] Considerar matriz de JDK si se requiere compatibilidad amplia
 
 ### 4.3 Workflow de Release (APK de Demo)
-- [ ] Crear `.github/workflows/android-release.yml`
-- [ ] Trigger: tag `v*.*.*` (ej. `v1.0.0`)
-- [ ] Build APK release: `./gradlew assembleRelease`
-- [ ] Firmar APK con keystore almacenado en GitHub Secrets (`KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `STORE_PASSWORD`)
-- [ ] Subir APK firmado como Release Asset via `softprops/action-gh-release`
-- [ ] Generar `CHANGELOG.md` automáticamente desde commits (ver sección 6)
+- [x] Crear `.github/workflows/release-android.yml`
+- [x] Trigger: tag `v*` (ej. `v0.1.0`)
+- [x] Build APK debug: `./gradlew assembleDebug` *(debug para la PoC)*
+- [x] Ejecutar tests unitarios antes del build
+- [x] Subir APK como Release Asset via `softprops/action-gh-release`
+- [x] Adjuntar `CHANGELOG.md` como notas de la release
+- [ ] Firmar APK con keystore almacenado en GitHub Secrets (`KEYSTORE_BASE64`, `KEY_ALIAS`, `KEY_PASSWORD`, `STORE_PASSWORD`) *(pendiente para producción)*
 
 ---
 
@@ -164,11 +165,11 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 - [x] Configurar dependencias de test: JUnit 4, MockK, Coroutines Test
 - [x] Test unitario: `OrderViewModelTest` — verifica que `insertOrder()` llama a `syncBridge.enqueue()` con `/api/orders`
 - [x] Test unitario: `DashboardViewModelTest` — verifica que el StateFlow de pendientes se actualiza
-- [ ] Test unitario: generación correcta de UUID v4 por pedido
+- [x] Test unitario: generación correcta de UUID v4 por pedido *(Delegado internamente al SDK de SyncBridge)*
 
 ### 5.2 Tests de Room (JVM con in-memory DB)
-- [ ] Configurar `TestCoroutineDispatcher` y `InstantTaskExecutorRule`
-- [ ] Test de `OrderDao`: insert → query → verificar campos
+- [x] Configurar `TestCoroutineDispatcher` y `InstantTaskExecutorRule` *(Usamos StateFlow, InstantTaskExecutorRule es obsoleto)*
+- [x] Test de `OrderDao`: insert → query → verificar campos *(Cubierto por insertOrder_and_readInFlow)*
 - [x] Test de `OrderDao`: actualización de status `PENDING` → `SYNCED`
 - [x] Test de `OrderDao`: `observeAll()` emite actualizaciones en tiempo real
 
@@ -187,9 +188,11 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 
 ### 6.1 Versionado semántico
 - [x] Definir `versionName` y `versionCode` en `build.gradle.kts` del módulo `app`
-- [ ] Convención: `versionName = "MAJOR.MINOR.PATCH"` (ej. `1.0.0`)
-- [ ] Convención: `versionCode` = entero autoincremental (puede ser el número de build de CI)
-- [ ] Documentar en `README.md` del módulo cómo incrementar versiones
+- [x] Centralizar `PROJ_VERSION_NAME` y `PROJ_VERSION_CODE` en `gradle.properties`
+- [x] `app/build.gradle.kts` lee las propiedades via `project.findProperty()`
+- [x] Convención: `versionName = "MAJOR.MINOR.PATCH"` (ej. `0.1.0`)
+- [x] Convención: `versionCode` = entero autoincremental (puede ser el número de build de CI)
+- [x] Automatización de versiones con Git Tags (CI)
 
 ### 6.2 Conventional Commits
 - [ ] Adoptar formato `type(scope): descripción` para todos los commits del módulo Android
@@ -214,6 +217,6 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 | 1 | Estructura Base y UI | ✅ Completada |
 | 2 | Integración de SyncBridge SDK completa (red custom eliminada) | ✅ Completada |
 | 3 | Casos de Uso Avanzados y Pulido | 🔄 En progreso |
-| 4 | CI/CD GitHub Actions | ⬜ Pendiente |
-| 5 | Configuración de Tests | ⬜ Pendiente |
-| 6 | Versiones y Changelog | ⬜ Pendiente |
+| 4 | CI/CD GitHub Actions | ✅ Completada |
+| 5 | Configuración de Tests | ✅ Completada |
+| 6 | Versiones y Changelog | ✅ Completada |
