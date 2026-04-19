@@ -163,15 +163,14 @@ Actualizar `[ ]` → `[x]` conforme se completen las tareas.
 ### 5.1 Tests unitarios (JVM)
 - [x] Configurar dependencias de test: JUnit 4, MockK, Coroutines Test
 - [x] Test unitario: `OrderViewModelTest` — verifica que `insertOrder()` llama a `syncBridge.enqueue()` con `/api/orders`
-- [ ] Test unitario: `DashboardViewModelTest` — verifica que el StateFlow de pendientes se actualiza
-- [ ] Test unitario: `MockServerInterceptorTest` — verifica respuestas 201, 409 y IOException en offline
+- [x] Test unitario: `DashboardViewModelTest` — verifica que el StateFlow de pendientes se actualiza
 - [ ] Test unitario: generación correcta de UUID v4 por pedido
 
 ### 5.2 Tests de Room (JVM con in-memory DB)
 - [ ] Configurar `TestCoroutineDispatcher` y `InstantTaskExecutorRule`
 - [ ] Test de `OrderDao`: insert → query → verificar campos
-- [ ] Test de `OrderDao`: actualización de status `PENDING` → `SYNCED`
-- [ ] Test de `OrderDao`: `observeAll()` emite actualizaciones en tiempo real
+- [x] Test de `OrderDao`: actualización de status `PENDING` → `SYNCED`
+- [x] Test de `OrderDao`: `observeAll()` emite actualizaciones en tiempo real
 
 ### 5.3 Tests de integración / instrumentados (opcional para PoC)
 - [ ] Configurar `hiltRule` en tests instrumentados si se usa Hilt
