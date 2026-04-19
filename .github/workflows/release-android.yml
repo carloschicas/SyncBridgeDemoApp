@@ -35,21 +35,25 @@ jobs:
 
       - name: Run unit tests
         working-directory: syncbridge-demo-android
-        run: ./gradlew testDebugUnitTest
+        run: ./gradlew testReleaseUnitTest
 
-      - name: Build Debug APK
+      - name: Build Release APK
         working-directory: syncbridge-demo-android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleRelease
 
       - name: Rename APK with version
-        run: mv syncbridge-demo-android/app/build/outputs/apk/debug/app-debug.apk syncbridge-demo-android/app/build/outputs/apk/debug/syncbridge-demo-${{ github.ref_name }}.apk
+        run: |
+          VERSION=$(echo '${{ github.ref_name }}' | tr '/' '-')
+          mv syncbridge-demo-android/app/build/outputs/apk/release/app-release-unsigned.apk \
+             syncbridge-demo-android/app/build/outputs/apk/release/syncbridge-demo-${VERSION}.apk
+          echo "APK_NAME=syncbridge-demo-${VERSION}.apk" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: SyncBridge Demo ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
-          files: syncbridge-demo-android/app/build/outputs/apk/debug/syncbridge-demo-${{ github.ref_name }}.apk
+          files: syncbridge-demo-android/app/build/outputs/apk/release/${{ env.APK_NAME }}
           body_path: syncbridge-demo-android/CHANGELOG.md
           generate_release_notes: false
         env:
